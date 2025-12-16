@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Giáng Sinh Vui Vẻ - MCNV</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Times New Roman', serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; touch-action: manipulation; }
+        .snowflake { position: absolute; top: -10px; color: white; font-size: 1em; opacity: 0.8; animation: fall linear infinite; z-index: 1; pointer-events: none; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
+        
+        /* CONTAINER VỚI VIỀN KẸO GẬY */
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(200, 200, 200, 0.2);
+            max-width: 900px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+            /* Viền trang trí */
+            border: 8px solid transparent;
+            border-image: repeating-linear-gradient(45deg, #c41e3a, #c41e3a 10px, #ffffff 10px, #ffffff 20px, #2d5016 20px, #2d5016 30px, #ffffff 30px, #ffffff 40px) 10;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px; width: 95%; }
+            h1 { font-size: 1.8em; }
+            .intro-text { font-size: 1em; }
+            .start-btn, .retry-btn { padding: 12px 30px; font-size: 1.1em; }
+            .game-header { flex-direction: column; gap: 10px; }
+            .timer, .counter { width: 100%; text-align: center; }
+            .message { font-size: 1.2em; }
+        }
+        .touch-hint { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(196, 30, 58, 0.9); color: white; padding: 15px 30px; border-radius: 15px; font-size: 1.1em; font-weight: bold; animation: fadeInOut 3s ease-in-out; pointer-events: none; z-index: 100; }
+        @keyframes fadeInOut { 0%, 100% { opacity: 0; } 10%, 90% { opacity: 1; } }
+        @media (max-width: 768px) { .touch-hint { display: block; } }
+        h1 { color: #c41e3a; font-size: 2.5em; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); animation: glow 2s ease-in-out infinite; }
+        @keyframes glow { 0%, 100% { text-shadow: 2px 2px 4px rgba(196, 30, 58, 0.5); } 50% { text-shadow: 2px 2px 20px rgba(196, 30, 58, 0.8), 0 0 30px rgba(196, 30, 58, 0.6); } }
+        .intro-text { font-size: 1.2em; color: #2d5016; margin-bottom: 30px; line-height: 1.6; }
+        .start-btn { background: linear-gradient(135deg, #c41e3a, #e74c3c); color: white; border: none; padding: 15px 40px; font-size: 1.3em; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(196, 30, 58, 0.4); transition: all 0.3s; animation: pulse 2s infinite; font-family: 'Times New Roman', serif; font-weight: bold; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .start-btn:hover { transform: scale(1.1); box-shadow: 0 8px 25px rgba(196, 30, 58, 0.6); }
+        .game-area { display: none; position: relative; }
+        .game-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.2em; }
+        .timer, .counter { background: linear-gradient(135deg, #2d5016, #4a7c2c); color: white; padding: 10px 20px; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+        .timer.warning { animation: shake 0.5s infinite; background: linear-gradient(135deg, #c41e3a, #e74c3c); }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .christmas-tree { position: relative; width: 350px; height: 450px; margin: 0 auto; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 450"><defs><linearGradient id="treeGrad" x1="0%25" y1="0%25" x2="0%25" y2="100%25"><stop offset="0%25" style="stop-color:%23165016;stop-opacity:1" /><stop offset="50%25" style="stop-color:%231a5c1a;stop-opacity:1" /><stop offset="100%25" style="stop-color:%232d5016;stop-opacity:1" /></linearGradient><radialGradient id="starGrad"><stop offset="0%25" style="stop-color:%23ffed4e;stop-opacity:1" /><stop offset="50%25" style="stop-color:%23ffd700;stop-opacity:1" /><stop offset="100%25" style="stop-color:%23ffa500;stop-opacity:0.8" /></radialGradient><filter id="shadow"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/><feOffset dx="2" dy="4" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="glow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(%23shadow)"><path d="M 175 290 L 150 290 L 150 390 L 200 390 L 200 290 Z" fill="%238B4513"/><ellipse cx="175" cy="390" rx="35" ry="8" fill="%23654321" opacity="0.6"/><path d="M 175 50 L 140 95 L 150 95 L 120 140 L 135 140 L 100 190 L 120 190 L 80 245 L 100 245 L 50 290 L 300 290 L 250 245 L 270 245 L 230 190 L 250 190 L 215 140 L 230 140 L 200 95 L 210 95 Z" fill="url(%23treeGrad)"/><path d="M 175 50 L 145 90 L 155 90 L 130 130 L 145 130 L 115 175 L 130 175 L 95 230 L 255 230 L 220 175 L 235 175 L 205 130 L 220 130 L 195 90 L 205 90 Z" fill="%231a5c1a" opacity="0.3"/><ellipse cx="120" cy="150" rx="8" ry="12" fill="%23ffffff" opacity="0.2"/><ellipse cx="230" cy="200" rx="10" ry="15" fill="%23ffffff" opacity="0.15"/><ellipse cx="175" cy="180" rx="6" ry="9" fill="%23ffffff" opacity="0.2"/></g><g filter="url(%23glow)"><polygon points="175,15 180,28 194,28 183,36 188,49 175,41 162,49 167,36 156,28 170,28" fill="url(%23starGrad)"><animate attributeName="opacity" values="1;0.6;1" dur="1.5s" repeatCount="indefinite"/></polygon></g></svg>') no-repeat center; background-size: contain; cursor: crosshair; touch-action: none; }
+        @media (max-width: 768px) { .christmas-tree { width: 280px; height: 360px; } }
+        .tree-lights { position: absolute; width: 8px; height: 8px; border-radius: 50%; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 50%, 100% { opacity: 1; box-shadow: 0 0 10px currentColor; } 25%, 75% { opacity: 0.3; } }
+        .sparkle { position: absolute; width: 4px; height: 4px; background: radial-gradient(circle, #fff, transparent); border-radius: 50%; animation: sparkleFloat 3s ease-in-out infinite; pointer-events: none; }
+        @keyframes sparkleFloat { 0% { transform: translateY(0) scale(0); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-100px) scale(1); opacity: 0; } }
+        .branch-light { position: absolute; width: 6px; height: 6px; background: radial-gradient(circle, rgba(255, 255, 200, 0.8), transparent); border-radius: 50%; animation: gentleBlink 2s ease-in-out infinite; pointer-events: none; }
+        @keyframes gentleBlink { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.5); } }
+        @media (max-width: 768px) { .ornament { font-size: 28px; } .ornament-item { width: 60px; height: 60px; font-size: 38px; } }
+        .ornament { position: absolute; font-size: 35px; cursor: pointer; transition: all 0.3s; animation: swing 3s ease-in-out infinite, placeOrnament 0.5s; filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.3)); pointer-events: none; }
+        @keyframes placeOrnament { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 50% { transform: scale(1.3) rotate(180deg); } 100% { transform: scale(1) rotate(360deg); opacity: 1; } }
+        @keyframes swing { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        .ornament-palette { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 15px; margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 15px; box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .ornament-item { width: 70px; height: 70px; cursor: pointer; transition: all 0.3s; border: 3px solid transparent; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 45px; background: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); user-select: none; }
+        .ornament-item:hover { transform: scale(1.15) rotate(5deg); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        .ornament-item.selected { border-color: #c41e3a; background: linear-gradient(135deg, #fff5f5, #ffe0e0); transform: scale(1.1); box-shadow: 0 0 20px rgba(196, 30, 58, 0.5); }
+        .gift-box { display: none; animation: zoomIn 0.8s; }
+        @keyframes zoomIn { 0% { transform: scale(0) rotate(-180deg); opacity: 0; } 60% { transform: scale(1.1) rotate(10deg); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+        .gift-image { width: 200px; margin: 20px auto; cursor: pointer; transition: transform 0.3s; animation: bounce 1s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .gift-image:hover { transform: scale(1.1) rotate(5deg); }
+        .message { font-size: 1.5em; color: #c41e3a; font-weight: bold; margin: 20px 0; line-height: 1.6; animation: fadeInUp 1s; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .success-message h1 { animation: bounceIn 1s, colorChange 2s infinite; }
+        @keyframes bounceIn { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes colorChange { 0%, 100% { color: #c41e3a; } 25% { color: #2d5016; } 50% { color: #ffd700; } 75% { color: #c41e3a; } }
+        .success-message .message { animation: fadeInUp 1s 0.5s both, float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .sad-santa { display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .retry-btn { background: linear-gradient(135deg, #2d5016, #4a7c2c); color: white; border: none; padding: 12px 30px; font-size: 1.1em; border-radius: 50px; cursor: pointer; margin-top: 20px; box-shadow: 0 5px 15px rgba(45, 80, 22, 0.4); transition: all 0.3s; font-family: 'Times New Roman', serif; font-weight: bold;}
+        .retry-btn:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(45, 80, 22, 0.6); }
+        .hidden { display: none !important; }
+        .music-control { position: fixed; bottom: 20px; right: 20px; background: rgba(255, 255, 255, 0.9); border-radius: 50px; padding: 10px 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1000; font-size: 1.2em; transition: all 0.3s; user-select: none;}
+        .music-control:hover { transform: scale(1.1); }
+        .firework { position: fixed; width: 5px; height: 5px; border-radius: 50%; animation: explode 1s ease-out forwards; pointer-events: none;}
+        @keyframes explode { 0% { transform: translate(0, 0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="intro-screen">
+            <h1>🎄 Chào Mừng Giáng Sinh! 🎄</h1>
+            <p class="intro-text">
+                Hãy cùng MCNV trang trí cây thông Noel thật đẹp nhé!<br>
+                <strong>Thử thách:</strong> Treo 20 vật phẩm lên cây trong 30 giây<br>
+                Sẵn sàng chưa?
+            </p>
+            <button class="start-btn" onclick="startGame()">🎅 Bắt Đầu Chơi!</button>
+        </div>
+
+        <div class="game-area">
+            <div class="game-header">
+                <div class="timer" id="timerDisplay">⏱️ Thời gian: <span id="time">30</span>s</div>
+                <div class="counter">🎁 Đã treo: <span id="count">0</span>/20</div>
+            </div>
+            <div class="christmas-tree" id="tree">
+                <div class="touch-hint" id="touchHint">👆 Chạm để treo đồ trang trí!</div>
+            </div>
+            <div class="ornament-palette" id="palette"></div>
+        </div>
+
+        <div class="gift-box">
+            <h2>🎉 Chúc Mừng! 🎉</h2>
+            <div class="gift-image" onclick="openGift()">
+                <svg width="200" height="200" viewBox="0 0 200 200">
+                    <defs><linearGradient id="boxGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#e74c3c"/><stop offset="100%" style="stop-color:#c41e3a"/></linearGradient><linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#ffd700"/><stop offset="50%" style="stop-color:#ffed4e"/><stop offset="100%" style="stop-color:#ffd700"/></linearGradient></defs>
+                    <rect x="50" y="80" width="100" height="100" fill="url(#boxGrad)" rx="5"/><rect x="40" y="60" width="120" height="30" fill="#e74c3c" rx="3"/><rect x="95" y="60" width="10" height="120" fill="url(#ribbonGrad)"/><rect x="40" y="105" width="120" height="10" fill="url(#ribbonGrad)"/><path d="M 100 60 Q 80 40 85 30 Q 90 20 100 25 Q 110 20 115 30 Q 120 40 100 60" fill="url(#ribbonGrad)"/><ellipse cx="70" cy="100" rx="8" ry="12" fill="#ffffff" opacity="0.3"/><ellipse cx="130" cy="140" rx="10" ry="15" fill="#ffffff" opacity="0.2"/>
+                </svg>
+            </div>
+            <p style="font-size: 1.1em; color: #2d5016; font-weight: bold;">👆 Nhấn vào hộp quà để mở!</p>
+        </div>
+
+        <div class="sad-santa">
+            <h2 style="color: #c41e3a;">😢 Ôi không!</h2>
+            <div style="font-size: 120px; margin: 20px 0; animation: shake 1s infinite;">🎅</div>
+            <p class="intro-text">Bạn chưa hoàn thành thử thách.<br>Đừng lo, hãy thử lại nhé!</p>
+            <button class="retry-btn" onclick="resetGame()">🔄 Chơi Lại</button>
+        </div>
+
+        <div class="success-message hidden">
+            <h1 style="color: #c41e3a; margin-bottom: 20px;">🎄✨ MERRY CHRISTMAS ✨🎄</h1>
+            
+            <style>@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');</style>
+            
+            <p class="message" style="
+                font-family: 'Great Vibes', cursive;
+                font-size: 2.8em;
+                color: #C5A000;
+                font-weight: normal;
+                line-height: 1.4;
+                text-shadow: 0 0 5px rgba(255, 223, 0, 0.6), 0 0 15px rgba(255, 215, 0, 0.4);
+                margin: 10px 0 10px 0; 
+            ">
+             🌟 Giáng sinh vui vẻ<br>
+                Sức khỏe dồi dào 🎁
+            </p>
+
+            <img src="https://i.ibb.co/N6mv3Nn0/logo-removebg-preview.png" alt="Logo MCNV" style="
+                width: 160px;          /* Kích thước vừa phải, cân đối với chữ */
+                max-width: 80%;        /* Đảm bảo không bị tràn màn hình đt */
+                height: auto;
+                margin-top: 15px;      /* Cách dòng chữ ra một chút */
+                display: block;        /* Để căn giữa dễ hơn */
+                margin-left: auto;
+                margin-right: auto;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+                animation: fadeInUp 1s 0.5s both;
+            ">
+        </div>
+    </div>
+
+    <div class="music-control" id="musicBtn" onclick="toggleMusic()">🔇 Nhạc</div>
+
+    <script>
+        const GAME_TIME = 30;
+        const TARGET_ORNAMENTS = 20;
+        const WARNING_TIME = 10;
+        const ornaments = ['🎄', '🧦', '🍪', '⭐', '✨', '💫', '🌟', '🎁', '🎀', '🎊', '🎉', '🔔', '🕯️', '❄️', '☃️', '🦌', '🎅', '🤶'];
+
+        let selectedOrnament = ornaments[0];
+        let count = 0;
+        let timeLeft = GAME_TIME;
+        let timer;
+        let musicPlaying = false;
+        let audioContext = null;
+        let musicTimeout = null; 
+        let sparkleInterval = null; 
+        let isCelebrationMode = false;
+
+        function initAudio() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            } catch (e) { console.log('Audio not supported'); }
+        }
+
+        function playNote(frequency, duration, startTime) {
+            if (!audioContext) return;
+            try {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.value = frequency;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.15, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            } catch (e) { }
+        }
+
+        function playPlaceSound() {
+            if (!audioContext || !musicPlaying) return; 
+            const now = audioContext.currentTime;
+            const freq = [800, 1000, 1200][Math.floor(Math.random() * 3)];
+            playNote(freq, 0.1, now);
+        }
+
+        function playWinSound() {
+            if (!audioContext || !musicPlaying) return;
+            const now = audioContext.currentTime;
+            [262, 330, 392, 523].forEach((freq, i) => playNote(freq, 0.3, now + i * 0.2));
+        }
+
+        function playLoseSound() {
+            if (!audioContext || !musicPlaying) return;
+            playNote(200, 0.5, audioContext.currentTime);
+        }
+
+        function startBackgroundMusic() {
+            if (!audioContext || !musicPlaying) return;
+            clearTimeout(musicTimeout);
+
+            const notes = [330, 330, 330, 330, 330, 330, 330, 392, 262, 294, 330];
+            const durations = [0.25, 0.25, 0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.35, 0.15, 0.7];
+            
+            let time = audioContext.currentTime;
+            notes.forEach((note, i) => {
+                playNote(note, durations[i], time);
+                time += durations[i];
+            });
+            
+            const delay = (time - audioContext.currentTime) * 1000 + 500;
+            musicTimeout = setTimeout(() => {
+                if (musicPlaying && !isCelebrationMode) startBackgroundMusic();
+            }, delay > 0 ? delay : 1000);
+        }
+
+        function playCelebrationMusic() {
+            if (!audioContext) { initAudio(); setTimeout(playCelebrationMusic, 100); return; }
+            if (!musicPlaying || !isCelebrationMode) return;
+            
+            clearTimeout(musicTimeout);
+
+            const melody = [
+                {note: 262, dur: 0.25}, {note: 294, dur: 0.25}, {note: 294, dur: 0.15}, {note: 330, dur: 0.35},
+                {note: 330, dur: 0.25}, {note: 349, dur: 0.25}, {note: 349, dur: 0.15}, {note: 392, dur: 0.35},
+                {note: 392, dur: 0.25}, {note: 392, dur: 0.25}, {note: 440, dur: 0.25}, {note: 392, dur: 0.25},
+                {note: 349, dur: 0.25}, {note: 330, dur: 0.25}, {note: 262, dur: 0.25}, {note: 262, dur: 0.25},
+                {note: 262, dur: 0.25}, {note: 330, dur: 0.25}, {note: 330, dur: 0.25}, {note: 349, dur: 0.25},
+                {note: 330, dur: 0.25}, {note: 294, dur: 0.25}, {note: 262, dur: 0.5}
+            ];
+            
+            let time = audioContext.currentTime + 0.1;
+            melody.forEach(({note, dur}) => {
+                playNote(note, dur, time);
+                playNote(note * 2, dur * 0.8, time);
+                time += dur;
+            });
+            
+            const delay = (time - audioContext.currentTime) * 1000 + 200;
+            musicTimeout = setTimeout(() => {
+                if (musicPlaying && isCelebrationMode) playCelebrationMusic();
+            }, delay > 0 ? delay : 1000);
+        }
+
+        function stopBackgroundMusic() {
+            musicPlaying = false;
+            clearTimeout(musicTimeout); 
+        }
+
+        function createSnowflakes() {
+            for (let i = 0; i < 30; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.innerHTML = '❄';
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                snowflake.style.animationDelay = Math.random() * 5 + 's';
+                document.body.appendChild(snowflake);
+            }
+        }
+
+        function createTreeLights() {
+            const tree = document.getElementById('tree');
+            if(tree.querySelector('.tree-lights')) return;
+
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+            const positions = [
+                {left: '45%', top: '15%'}, {left: '55%', top: '15%'},
+                {left: '35%', top: '25%'}, {left: '65%', top: '25%'},
+                {left: '30%', top: '35%'}, {left: '70%', top: '35%'},
+                {left: '25%', top: '45%'}, {left: '75%', top: '45%'},
+                {left: '20%', top: '55%'}, {left: '80%', top: '55%'}
+            ];
+            
+            positions.forEach((pos, index) => {
+                const light = document.createElement('div');
+                light.className = 'tree-lights';
+                Object.assign(light.style, {left: pos.left, top: pos.top, backgroundColor: colors[index % colors.length], color: colors[index % colors.length], animationDelay: (index * 0.15) + 's'});
+                tree.appendChild(light);
+            });
+            
+             // Branch lights
+             const branchPositions = [
+                {left: '30%', top: '20%'}, {left: '70%', top: '22%'}, {left: '40%', top: '30%'},
+                {left: '60%', top: '32%'}, {left: '25%', top: '40%'}, {left: '75%', top: '42%'},
+                {left: '35%', top: '50%'}, {left: '65%', top: '52%'}, {left: '20%', top: '60%'},
+                {left: '80%', top: '62%'}, {left: '45%', top: '35%'}, {left: '55%', top: '45%'}
+            ];
+            branchPositions.forEach((pos, index) => {
+                const branchLight = document.createElement('div');
+                branchLight.className = 'branch-light';
+                Object.assign(branchLight.style, {left: pos.left, top: pos.top, animationDelay: (index * 0.3) + 's'});
+                tree.appendChild(branchLight);
+            });
+        }
+        
+        function startSparkles() {
+            if (sparkleInterval) clearInterval(sparkleInterval);
+            const tree = document.getElementById('tree');
+            sparkleInterval = setInterval(() => {
+                if (document.querySelector('.game-area').style.display !== 'block') return;
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = (Math.random() * 100) + '%';
+                sparkle.style.top = (20 + Math.random() * 60) + '%';
+                sparkle.style.animationDuration = (2 + Math.random() * 2) + 's';
+                tree.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 4000);
+            }, 400); 
+        }
+
+        function stopSparkles() {
+            if (sparkleInterval) clearInterval(sparkleInterval);
+        }
+
+        function startGame() {
+            initAudio();
+            document.querySelector('.intro-screen').classList.add('hidden');
+            document.querySelector('.game-area').style.display = 'block';
+            createTreeLights();
+            startSparkles(); 
+            
+            if (window.innerWidth <= 768) {
+                const hint = document.getElementById('touchHint');
+                hint.style.display = 'block';
+                setTimeout(() => { hint.style.display = 'none'; }, 3000);
+            }
+            
+            const palette = document.getElementById('palette');
+            palette.innerHTML = '';
+            ornaments.forEach((ornament, index) => {
+                const item = document.createElement('div');
+                item.className = 'ornament-item';
+                item.innerHTML = ornament;
+                item.onclick = () => selectOrnament(ornament, item);
+                if (index === 0) item.classList.add('selected');
+                palette.appendChild(item);
+            });
+            
+            startTimer();
+            
+            const tree = document.getElementById('tree');
+            tree.removeEventListener('pointerdown', placeOrnament); 
+            tree.addEventListener('pointerdown', placeOrnament);
+
+            if (!musicPlaying) toggleMusic();
+        }
+
+        function selectOrnament(ornament, element) {
+            selectedOrnament = ornament;
+            document.querySelectorAll('.ornament-item').forEach(item => item.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function placeOrnament(e) {
+            e.preventDefault(); 
+            if (count >= TARGET_ORNAMENTS) return;
+            
+            const tree = document.getElementById('tree');
+            const rect = tree.getBoundingClientRect();
+            
+            const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            
+            const ornament = document.createElement('div');
+            ornament.className = 'ornament';
+            ornament.innerHTML = selectedOrnament;
+            ornament.style.left = (clientX - rect.left - 15) + 'px'; 
+            ornament.style.top = (clientY - rect.top - 15) + 'px';
+            ornament.style.animationDelay = Math.random() * 3 + 's';
+            tree.appendChild(ornament);
+            
+            playPlaceSound();
+            count++;
+            document.getElementById('count').textContent = count;
+            
+            if (count >= TARGET_ORNAMENTS) winGame();
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = GAME_TIME;
+            document.getElementById('time').textContent = timeLeft;
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('time').textContent = timeLeft;
+                
+                if (timeLeft <= WARNING_TIME) {
+                    document.getElementById('timerDisplay').classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    if (count < TARGET_ORNAMENTS) loseGame();
+                }
+            }, 1000);
+        }
+
+        function winGame() {
+            clearInterval(timer);
+            stopSparkles();
+            document.querySelector('.game-area').style.display = 'none';
+            document.querySelector('.gift-box').style.display = 'block';
+            stopBackgroundMusic();
+            playWinSound();
+        }
+
+        function loseGame() {
+            clearInterval(timer);
+            stopSparkles();
+            document.querySelector('.game-area').style.display = 'none';
+            document.querySelector('.sad-santa').style.display = 'block';
+            stopBackgroundMusic();
+            document.getElementById('musicBtn').innerHTML = '🔇 Nhạc';
+            playLoseSound();
+        }
+
+        function createFireworks() {
+            for (let i = 0; i < 30; i++) { 
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    firework.style.left = Math.random() * 100 + '%';
+                    firework.style.top = Math.random() * 100 + '%';
+                    firework.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    firework.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                    firework.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                    document.body.appendChild(firework);
+                    setTimeout(() => firework.remove(), 1000);
+                }, i * 50);
+            }
+        }
+
+        function openGift() {
+            document.querySelector('.gift-box').style.display = 'none';
+            document.querySelector('.success-message').classList.remove('hidden');
+            createFireworks();
+            initAudio();
+            stopBackgroundMusic();
+            isCelebrationMode = true;
+            
+            setTimeout(() => {
+                musicPlaying = true;
+                playCelebrationMusic();
+                document.getElementById('musicBtn').innerHTML = '🔊 Nhạc';
+            }, 300);
+        }
+
+        function toggleMusic() {
+            initAudio();
+            if (musicPlaying) {
+                stopBackgroundMusic();
+                isCelebrationMode = false;
+                document.getElementById('musicBtn').innerHTML = '🔇 Nhạc';
+            } else {
+                musicPlaying = true;
+                if (isCelebrationMode) {
+                    playCelebrationMusic();
+                } else {
+                    startBackgroundMusic();
+                }
+                document.getElementById('musicBtn').innerHTML = '🔊 Nhạc';
+            }
+        }
+
+        function resetGame() {
+            count = 0;
+            isCelebrationMode = false;
+            document.getElementById('count').textContent = '0';
+            document.getElementById('timerDisplay').classList.remove('warning');
+            const tree = document.getElementById('tree');
+            tree.innerHTML = '<div class="touch-hint" id="touchHint">👆 Chạm để treo đồ trang trí!</div>';
+            stopBackgroundMusic();
+            if (!musicPlaying) {
+                musicPlaying = true;
+                startBackgroundMusic();
+                document.getElementById('musicBtn').innerHTML = '🔊 Nhạc';
+            } else {
+                startBackgroundMusic();
+            }
+            document.querySelector('.sad-santa').style.display = 'none';
+            document.querySelector('.game-area').style.display = 'block';
+            createTreeLights();
+            startSparkles();
+            startTimer();
+            tree.removeEventListener('pointerdown', placeOrnament);
+            tree.addEventListener('pointerdown', placeOrnament);
+        }
+
+        createSnowflakes();
+        document.addEventListener('click', initAudio, { once: true });
+    </script>
+</body>
+</html>
